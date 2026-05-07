@@ -587,4 +587,7 @@ VDBVolume<L>::ExtractPointCloud(bool fill_holes, float min_weight, const float p
 
 
 template class slimvdb::VDBVolume<slimvdb::Language::CLOSED>;
-template class slimvdb::VDBVolume<slimvdb::Language::OPEN>;
+// Local patch (2026-04-14): OPEN instantiation disabled because the upstream
+// openvdb slim-vdb branch is missing VecXf / VecXFGrid types. Our experiments
+// only use closed-set semantics (KITTI NCLASSES=20, Replica NCLASSES=102).
+// template class slimvdb::VDBVolume<slimvdb::Language::OPEN>;

@@ -29,4 +29,4 @@ namespace slimvdb {
     constexpr Language LANGUAGE = slimvdb::Language::CLOSED;
 }
 
-constexpr int NCLASSES = 14;
+constexpr int NCLASSES = 151;

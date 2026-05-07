@@ -36,6 +36,23 @@
 #include "utils/Utils.h"
 #include "Config.h"
 
+// -----------------------------------------------------------------------------
+// Local patch (2026-04-14): stub types for the OPEN-set build path.
+//
+// The umfieldrobotics/openvdb slim-vdb branch defines `openvdb::VecXI32<S>` and
+// `openvdb::VecXIGrid<S>` but NOT `openvdb::VecXF32<S>` or `openvdb::VecXFGrid<S>`.
+// `std::conditional_t` requires both branches to parse, so we alias the missing
+// types to their int32 equivalents. The OPEN path is gated by `if constexpr
+// (L == slimvdb::OPEN)` and never executes in our build.
+// -----------------------------------------------------------------------------
+namespace openvdb {
+    OPENVDB_USE_VERSION_NAMESPACE
+    namespace OPENVDB_VERSION_NAME {
+        template<Index32 S> using VecXF32 = VecXI32<S>;   // stub — OPEN disabled
+        template<Index32 S> using VecXFGrid = VecXIGrid<S>; // stub — OPEN disabled
+    }
+}
+
 namespace slimvdb {
 
 /// @brief Compile-time alias for the OpenVDB vector grid type based on language

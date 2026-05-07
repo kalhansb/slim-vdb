@@ -154,4 +154,40 @@ struct RealWorldConfig {
                            tmp_color_map};
     }
 };
+
+struct ReplicaConfig {
+    bool apply_pose_;
+    bool preprocess_;
+    float min_range_;
+    float max_range_;
+    int render_img_width_;
+    int render_img_height_;
+    std::string semantic_subdir_;  // "semantic" (GT) or "semantic_sam_clip" (predicted)
+    std::map<int, std::vector<int>> color_map_;
+
+    static inline ReplicaConfig LoadFromYAML(const std::string& path) {
+        std::ifstream config_file(path, std::ios_base::in);
+        auto config = YAML::Load(config_file);
+
+        std::map<int, std::vector<int>> tmp_color_map;
+        if (config["color_map"]) {
+            for (auto color : config["color_map"]) {
+                tmp_color_map.insert(std::make_pair(color.first.as<int>(),
+                                                    color.second.as<std::vector<int>>()));
+            }
+        }
+
+        std::string sem_subdir = "semantic";
+        if (config["semantic_subdir"]) sem_subdir = config["semantic_subdir"].as<std::string>();
+
+        return ReplicaConfig{config["apply_pose"].as<bool>(),
+                             config["preprocess"].as<bool>(),
+                             config["min_range"].as<float>(),
+                             config["max_range"].as<float>(),
+                             config["render_img_width"].as<int>(),
+                             config["render_img_height"].as<int>(),
+                             sem_subdir,
+                             tmp_color_map};
+    }
+};
 }  // namespace datasets

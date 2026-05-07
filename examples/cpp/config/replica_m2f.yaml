@@ -1,0 +1,29 @@
+# SLIM-VDB config for Replica (NICE-SLAM trajectories) — Mask2Former-ADE variant.
+# Pair with the build-replica_ade (NCLASSES=151) binary.
+#
+# Build with: -DSLIMVDB_LANGUAGE=CLOSED -DSLIMVDB_NCLASSES=151
+# (150 ADE20K classes + 0 = void)
+
+# SLIMVDB (TSDF) ------------------------------------------------------------
+voxel_size: 0.05
+sdf_trunc: 0.15
+space_carving: False
+prune_interval: -1
+
+# Reconstruction ------------------------------------------------------------
+fill_holes: False
+min_weight: 5.0
+p_threshold: 0.1
+
+# Replica dataset -----------------------------------------------------------
+apply_pose: True
+preprocess: True
+min_range: 0.2
+max_range: 8.0
+render_img_width: 1200
+render_img_height: 680
+
+# Label source: Mask2Former Swin-L ADE20K predictions.
+semantic_subdir: semantic_m2f_ade
+
+color_map: {}

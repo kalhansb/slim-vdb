@@ -28,6 +28,23 @@ using BufferT = nanovdb::cuda::DeviceBuffer;
 using BufferT = nanovdb::HostBuffer;
 #endif
 
+// -----------------------------------------------------------------------------
+// Local patch (2026-04-14): stub types for the OPEN-set build path.
+//
+// The umfieldrobotics/openvdb slim-vdb branch defines `nanovdb::math::VecXi<S>`
+// and `nanovdb::VecXIGrid<S>` but NOT `VecXf<S>` or `VecXFGrid<S>`. This file
+// references those types via `std::conditional_t`, which needs BOTH branches to
+// be parseable even when only the CLOSED branch is selected. Stubbing them to
+// the int equivalents lets the file parse; the OPEN code paths are guarded by
+// `if constexpr (L == slimvdb::OPEN)` and never actually execute in our build.
+// -----------------------------------------------------------------------------
+namespace nanovdb {
+    namespace math {
+        template<int S> using VecXf = VecXi<S>;  // stub — OPEN path disabled
+    }
+    template<int S> using VecXFGrid = VecXIGrid<S>;  // stub — OPEN path disabled
+}
+
 template <slimvdb::Language L, int S>
 using LabelGridT = std::conditional_t<L == slimvdb::CLOSED, nanovdb::VecXIGrid<S>, nanovdb::VecXFGrid<S>>;
 
@@ -75,8 +92,11 @@ inline float renderImage(bool useCuda, const RenderFn renderOp, int width, int h
     using ClockT = std::chrono::high_resolution_clock;
     auto t0 = ClockT::now();
 
+    // Local patch (2026-04-14): block size 512 overflows the per-SM register
+    // budget on smaller GPUs (RTX 4060 Laptop) when NCLASSES is large (e.g. 102
+    // for Replica). Dropped to 128 to stay within register limits.
     computeForEach(
-        useCuda, width * height, 512, __FILE__, __LINE__, [renderOp, image, grid, label_grid, weight_grid, beta_grid, embeddings, num_open_semantic_classes] __hostdev__(int start, int end) {
+        useCuda, width * height, 128, __FILE__, __LINE__, [renderOp, image, grid, label_grid, weight_grid, beta_grid, embeddings, num_open_semantic_classes] __hostdev__(int start, int end) {
             renderOp(start, end, image, grid, label_grid, weight_grid, beta_grid, embeddings);
         });
     computeSync(useCuda, __FILE__, __LINE__);

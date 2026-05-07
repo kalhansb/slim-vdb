@@ -66,3 +66,16 @@ add_executable(realworld_pipeline realworld_pipeline.cpp)
 target_compile_features(realworld_pipeline PUBLIC cxx_std_17)
 target_link_libraries(realworld_pipeline TBB::tbb SLIMVDB::slimvdb argparse::argparse fmt::fmt igl::core datasets yaml-cpp ${CUDA_LIBRARIES} ${TORCH_LIBRARIES})
 set_target_properties(realworld_pipeline PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+
+add_executable(replica_pipeline replica_pipeline.cpp)
+target_compile_features(replica_pipeline PUBLIC cxx_std_17)
+target_link_libraries(replica_pipeline TBB::tbb SLIMVDB::slimvdb argparse::argparse fmt::fmt igl::core datasets yaml-cpp ${CUDA_LIBRARIES} ${TORCH_LIBRARIES})
+set_target_properties(replica_pipeline PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+
+# Post-processing utility: reads a SLIM-VDB semantics .vdb and dumps
+# (x, y, z, argmax_class) binary records. Uses the same SLIMVDB::slimvdb
+# target so the compile-time NCLASSES matches the variant this was built in.
+add_executable(vdb_to_voxels vdb_to_voxels.cpp)
+target_compile_features(vdb_to_voxels PUBLIC cxx_std_17)
+target_link_libraries(vdb_to_voxels SLIMVDB::slimvdb)
+set_target_properties(vdb_to_voxels PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})

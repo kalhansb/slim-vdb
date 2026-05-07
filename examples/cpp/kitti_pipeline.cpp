@@ -167,6 +167,16 @@ int main(int argc, char* argv[]) {
         std::chrono::duration<double, std::milli> elapsed3 = t3_e - t3_s;
 
         if ((index-1) % 25 == 1 || index == 99) std::cout << "Integrate time: " << elapsed1.count()/1e3 << " Render time: " << elapsed2.count()/1e3 << " Prune time: " << elapsed3.count()/1e3 << std::endl;
+        // Per-frame machine-parseable timing + OpenVDB grid memory.
+        {
+            const uint64_t tsdf_bytes = tsdf_volume.tsdf_ ? tsdf_volume.tsdf_->memUsage() : 0;
+            const uint64_t sem_bytes  = tsdf_volume.semantics_ ? tsdf_volume.semantics_->memUsage() : 0;
+            fmt::print("TIMING idx={} integrate_ms={:.3f} render_ms={:.3f} prune_ms={:.3f} "
+                       "vdb_tsdf_mb={:.2f} vdb_sem_mb={:.2f}\n",
+                       index, elapsed1.count(), elapsed2.count(), elapsed3.count(),
+                       tsdf_bytes / (1024.0 * 1024.0), sem_bytes / (1024.0 * 1024.0));
+            std::cout.flush();
+        }
     }
 
 

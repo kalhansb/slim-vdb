@@ -236,3 +236,8 @@ dmypy.json
 ### clion ###
 .idea/
 cmake-build-debug/
+
+# SCovox patches: compiled artefacts of replica_pipeline + vdb_to_voxels live
+# next to source per RUNTIME_OUTPUT_DIRECTORY in examples/cpp/CMakeLists.txt.
+/examples/cpp/replica_pipeline
+/examples/cpp/vdb_to_voxels
