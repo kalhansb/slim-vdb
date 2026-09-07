@@ -34,7 +34,9 @@
 #include <nanovdb/util/HDDA.h>
 #include <nanovdb/util/IO.h>
 #include <nanovdb/util/Primitives.h>
+#if defined(NANOVDB_USE_CUDA)
 #include <nanovdb/util/cuda/CudaDeviceBuffer.h>
+#endif
 #include <nanovdb/NanoVDB.h>
 
 #include <Eigen/Core>
@@ -45,6 +47,7 @@
 #include <memory>
 #include <vector>
 #include <execution>
+#include <stdexcept>
 
 #if defined(NANOVDB_USE_CUDA)
 using BufferT = nanovdb::cuda::DeviceBuffer;
@@ -334,6 +337,7 @@ void VDBVolume<L>::Integrate(const std::vector<Eigen::Vector3d>& points,
 template <Language L>
 void VDBVolume<L>::Render(const std::vector<double> origin_vec, const std::vector<double> rot_quat_vec, const int index, const int render_img_width, const int render_img_height, 
                                                                                                         const float min_range, const float max_range, const float p_threshold) {
+#if defined(NANOVDB_USE_CUDA)   // SLIMVDB_SCENENN_NO_CUDA_RENDER
     // Render image and display
     std::clog << "\nFrame #" << index << std::endl;
 
@@ -376,6 +380,21 @@ void VDBVolume<L>::Render(const std::vector<double> origin_vec, const std::vecto
     auto timer_render1 = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double, std::milli> elapsed2 = timer_render1 - timer_render0;
     std::clog << "NanoVDB rendering took: " << elapsed2.count() << " ms" << std::endl;
+#else
+    // The body above is the GPU raycast previewer.  It calls runNanoVDB<>(),
+    // which is defined only in nanovdb_utils/nanovdb.cu -- a CUDA translation
+    // unit.  With no CUDA toolkit present that .cu file cannot be compiled, so
+    // Render() has no definition to call and is unbuildable by construction.
+    // The symbol is kept so the explicit template instantiations at the bottom
+    // of this file still succeed; calling it aborts loudly rather than silently
+    // returning a blank image.  Integrate(), UpdateTSDF(), Prune(),
+    // ExtractPointCloud() and ExtractTriangleMesh() are untouched.
+    (void)origin_vec; (void)rot_quat_vec; (void)index;
+    (void)render_img_width; (void)render_img_height;
+    (void)min_range; (void)max_range; (void)p_threshold;
+    throw std::runtime_error("VDBVolume::Render() requires a CUDA build "
+                             "(NANOVDB_USE_CUDA); it is excluded here.");
+#endif
 }
 
 template <Language L>

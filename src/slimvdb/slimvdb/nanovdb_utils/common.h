@@ -13,7 +13,9 @@
 #include <fstream>
 #include <nanovdb/NanoVDB.h>
 #include <nanovdb/util/IO.h>
+#if defined(NANOVDB_USE_CUDA)
 #include <nanovdb/util/cuda/CudaDeviceBuffer.h>
+#endif
 #include <nanovdb/util/Ray.h>
 #include <nanovdb/util/HDDA.h>
 #include <nanovdb/util/GridBuilder.h>
